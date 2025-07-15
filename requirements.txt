@@ -1,0 +1,11 @@
+# This requirements.txt is for reference only.
+# Actual dependencies are managed by package.json (npm/yarn).
+# Listed for documentation purposes (for a Next.js + TypeScript + framer-motion + lucide-react + Tailwind CSS project).
+
+next
+react
+react-dom
+typescript
+framer-motion
+lucide-react
+tailwindcss 

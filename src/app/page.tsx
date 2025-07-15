@@ -1,9 +1,10 @@
 "use client"
-import React, { useState, useEffect } from 'react';
+import React, { useState, useEffect, useRef } from 'react';
 import { motion, AnimatePresence } from 'framer-motion';
 import { User, Clock, CheckCircle, XCircle, Users, Calendar, Wifi, Battery, AlertCircle, BookOpen } from 'lucide-react';
 import type { Variants } from 'framer-motion';
 import { easeInOut } from 'framer-motion';
+import { useRouter } from 'next/navigation';
 
 // 型定義
 interface Student {
@@ -31,14 +32,15 @@ function formatTime(sec: number) {
 }
 
 const AttendanceSystem = () => {
+
   const [currentTime, setCurrentTime] = useState(new Date());
   const [attendanceData, setAttendanceData] = useState<AttendanceData | null>(null);
   const [showMessage, setShowMessage] = useState(false);
   const [currentClass, setCurrentClass] = useState('Unknown');
   const REGISTERED_STUDENTS_KEY = "registeredStudents";
-  const DEFAULT_REGISTERED_STUDENTS: Student[] = [];
   const [leftTime, setLeftTime] = useState(0);
   const [remaining, setRemaining] = useState<number>(0);
+  const [totalStudents, setTotalStudents] = useState(0);
 
   const [registeredStudents, setRegisteredStudents] = useState<Student[]>([]);
   useEffect(() => {
@@ -49,19 +51,22 @@ const AttendanceSystem = () => {
       } catch {}
     }
   }, []);
-  const total = 50;
   const [attendanceStats, setAttendanceStats] = useState({
     present: 0,
-    total: 50,
+    total: 0,
     rate: 0
   });
   useEffect(() => {
     setAttendanceStats({
       present: registeredStudents.length,
-      total: 50,
-      rate: Math.round((registeredStudents.length / 50) * 100)
+      total: totalStudents,
+      rate: Math.round((registeredStudents.length / totalStudents) * 100)
     });
   }, [registeredStudents]);
+
+  const router = useRouter();
+
+  const idCounter = useRef(1227);
 
   // バックエンドからのデータ受信をシミュレート
   useEffect(() => {
@@ -72,6 +77,11 @@ const AttendanceSystem = () => {
     const leftTime = sessionStorage.getItem('classTimer');
     if (leftTime) {
       setLeftTime(Number(leftTime));
+    }
+
+    const totalNumber = sessionStorage.getItem('totalStudents');
+    if(totalNumber) {
+      setTotalStudents(Number(totalNumber));
     }
 
     const handleMessage = (event: MessageEvent) => {
@@ -145,6 +155,8 @@ const AttendanceSystem = () => {
     return () => clearInterval(interval);
   }, []);
 
+
+
   // テスト用のデータ送信（実際の使用では削除）
   const simulateBackendData = (success: boolean, status: string = 'present') => {
     const testData = {
@@ -152,7 +164,7 @@ const AttendanceSystem = () => {
       success: success,
       status: status,
       student: {
-        id: '12561526516256',
+        id: `3CEM${idCounter.current}`,
         name: '田中 太郎',
         year: '2年',
         department: '情報工学科'
@@ -162,6 +174,7 @@ const AttendanceSystem = () => {
     };
     
     window.postMessage(testData, '*');
+    idCounter.current++;
   };
 
   const containerVariants = {
@@ -224,6 +237,8 @@ const AttendanceSystem = () => {
       }
     }
   };
+
+
 
   return (
     <div className="min-h-screen bg-white text-black overflow-hidden relative">
